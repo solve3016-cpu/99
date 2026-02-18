@@ -15,8 +15,10 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { message, projectId, cookies } = req.body;
 
-    // We'll try the most common prompt endpoint for Lovable
-    const lovableUrl = `https://lovable.dev/api/projects/${projectId}/prompts`;
+    // THE CORRECT ENDPOINT FROM YOUR BROWSER!
+    const lovableUrl = `https://api.lovable.dev/projects/${projectId}/latest-message`;
+
+    console.log(`🚀 Forwarding message to: ${lovableUrl}` );
 
     const response = await axios.post(lovableUrl, {
       content: message,
@@ -24,19 +26,29 @@ app.post('/api/chat', async (req, res) => {
       headers: {
         'Cookie': cookies,
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64 ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': 'https://lovable.dev',
         'Referer': `https://lovable.dev/projects/${projectId}`,
-        'Origin': 'https://lovable.dev'
+        'X-Requested-With': 'XMLHttpRequest'
       }
     } );
 
+    console.log('✅ Lovable Success:', response.status);
     res.json({ success: true, data: response.data });
+
   } catch (error) {
-    console.error('Error:', error.message);
-    res.status(error.response?.status || 500).json({ 
-      success: false, 
-      message: error.response?.data?.message || 'Failed to connect to Lovable' 
-    });
+    console.error('❌ Lovable Error:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', JSON.stringify(error.response.data));
+      return res.status(error.response.status).json({
+        success: false,
+        message: `Lovable API Error (${error.response.status})`,
+        details: error.response.data
+      });
+    }
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
