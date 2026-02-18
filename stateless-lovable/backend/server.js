@@ -15,10 +15,10 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { message, projectId, cookies } = req.body;
 
-    // THE CORRECT ENDPOINT FROM YOUR BROWSER!
-    const lovableUrl = `https://api.lovable.dev/projects/${projectId}/latest-message`;
+    // THE CORRECT POST ENDPOINT!
+    const lovableUrl = `https://api.lovable.dev/projects/${projectId}/chat`;
 
-    console.log(`🚀 Forwarding message to: ${lovableUrl}` );
+    console.log(`🚀 Sending POST to: ${lovableUrl}` );
 
     const response = await axios.post(lovableUrl, {
       content: message,
@@ -30,7 +30,6 @@ app.post('/api/chat', async (req, res) => {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Origin': 'https://lovable.dev',
         'Referer': `https://lovable.dev/projects/${projectId}`,
-        'X-Requested-With': 'XMLHttpRequest'
       }
     } );
 
