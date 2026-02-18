@@ -13,18 +13,18 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, projectId, cookies } = req.body;
+    const { message, projectId, cookies, authToken } = req.body;
 
-    // THE CORRECT POST ENDPOINT!
     const lovableUrl = `https://api.lovable.dev/projects/${projectId}/chat`;
 
-    console.log(`🚀 Sending POST to: ${lovableUrl}` );
+    console.log(`🚀 Forwarding to Lovable for project: ${projectId}` );
 
     const response = await axios.post(lovableUrl, {
       content: message,
     }, {
       headers: {
         'Cookie': cookies,
+        'Authorization': authToken, // Using the Bearer token you found!
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -33,21 +33,15 @@ app.post('/api/chat', async (req, res) => {
       }
     } );
 
-    console.log('✅ Lovable Success:', response.status);
+    console.log('✅ Success from Lovable!');
     res.json({ success: true, data: response.data });
 
   } catch (error) {
-    console.error('❌ Lovable Error:', error.message);
-    if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Data:', JSON.stringify(error.response.data));
-      return res.status(error.response.status).json({
-        success: false,
-        message: `Lovable API Error (${error.response.status})`,
-        details: error.response.data
-      });
-    }
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error('❌ Error:', error.message);
+    res.status(error.response?.status || 500).json({
+      success: false,
+      message: error.response?.data?.message || 'Lovable API Error',
+    });
   }
 });
 
